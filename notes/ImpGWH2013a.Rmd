@@ -1,0 +1,29 @@
+---
+title: "Literate Programming Based Improvements To Chapter 1 of GWH2013a"
+author: "Peter von Rohr"
+date: "29 Jan 2015"
+layout: post
+output:
+  html_document:
+    keep_md: no
+    theme: united
+    mathjax: "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+references:
+- URL: http://www.springer.com/life+sciences/systems+biology+and+bioinformatics/book/978-1-62703-446-3
+  author:
+  - family: Gondro
+    given: Cedric
+  - family: van der Werf
+    given: Julius
+  - family: Hayes
+    given: Ben
+  id: GWH2013a
+  issued:
+    year: 2013
+  title: Genome-Wide Association Studies and Genomic Prediction
+---
+
+## Disclaimer
+This document summarizes the content of chapter 1 of [@GWH2013a]. The main objective of thi summary is to transform the summarized text and the programming code between the text into a document based on the paradigm of [`Literate Programming`](http://en.wikipedia.org/wiki/Literate_programming). 
+
+## References
