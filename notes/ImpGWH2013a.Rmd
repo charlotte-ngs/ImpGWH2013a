@@ -34,7 +34,9 @@ The authors state that R has become the de facto language of choice for statisti
 In this chapter, the authors discuss some approaches for performance improvement in R when working with large SNP datasets. 
 
 ### Introduction
-The introduction starts with the same statements as were already mentioned at the begining of the abstract. Do not get me wrong here, I do not want to critisize the authors here for saying anything wrong, but I find those arguments not so convincing. Let me add two points in favor of R that I would use to convince people to use R. For all those readers who are not interested in these arguments or for all those who are already convinced of R, can safely skip the remainder of this subsection and can jump to the next subsection.
+The introduction starts with the same statements as were already mentioned at the begining of the abstract. Do not get me wrong here, I do not want to critisize the authors here for saying anything wrong, but I find those arguments not so convincing. Part of the problem is also that they are not showing any R-code that does something impressive and useful. 
+
+Let me add two points in favor of R that I would use to convince people to use R. For all those readers who are not interested in these arguments or for all those who are already convinced of R, can safely skip the remainder of this subsection and can jump to the summary of chapter 2 of [@GWH2013a].
 
 1. `Fast Prototyping` - stands for the fact that once you have an idea, it can be very quickly transformed into R-code. This is explained very nicely by Dirk Edelbuettel in a [Google Tech Talk](https://www.youtube.com/watch?v=UZkaZhsOfT4). In short, imaging you have a dataset, like the one on eruption times and waiting times of the Old Faithful geyser in Yellowstone National Park, and you want to draw a histogram of the eruption times. In R this is just one statement. 
 
@@ -42,7 +44,30 @@ The introduction starts with the same statements as were already mentioned at th
 hist(faithful$eruption)
 ```
 
-Let us further assume that I want to draw 10000 markov samples from the empirical distribution and I want to show confidence levels of the drawn samples.
+Let us further assume that I want to draw markov chain samples from the empirical distribution and I want to show confidence levels of the drawn samples in a line-plot. And here it comes ...
+
+```{r, fig.show='asis'}
+vOfErTime <- faithful$eruptions
+### # density fit 
+fitDensity <- density(vOfErTime)
+### # markov chain samples
+fitMC <- replicate(10000, {
+  vSam <- sample(vOfErTime, replace = TRUE);
+  vSamDens <- density(vSam, from = min(fitDensity$x),
+                      to = max(fitDensity$x))$y
+})
+### # get quantiles based on samples
+fitQuant <- apply(fitMC, 1, 
+                  quantile, c(0.025, 0.975))
+plot(fitDensity, ylim = range(fitQuant), main = "Old Faithful Eruption Times")
+polygon(c(fitDensity$x, rev(fitDensity$x)),
+        c(fitQuant[1,], rev(fitQuant[2,])),
+        col = 'grey', border = FALSE)
+lines(fitDensity)
+```
+
+Let us have a moment here to appreciate what we just did. This is density fitting, drawing markov chain samples, computing quantiles of the samples and plotting everything in just seven lines of code. This example best shows what is really meant by fast prototyping.
+
 
 2. `Literate Programming` - R provides a lot of infrastructure to implement the paradigm of literate programming. 
 
