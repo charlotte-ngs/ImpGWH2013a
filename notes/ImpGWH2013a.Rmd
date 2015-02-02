@@ -24,6 +24,30 @@ references:
 ---
 
 ## Disclaimer
-This document summarizes the content of chapter 1 of [@GWH2013a]. The main objective of thi summary is to transform the summarized text and the programming code between the text into a document based on the paradigm of [`Literate Programming`](http://en.wikipedia.org/wiki/Literate_programming). 
+This document summarizes the content of chapter 1 of [@GWH2013a]. The main objective of this summary is to transform the summarized text and the programming code between the text into a document based on the paradigm of [`Literate Programming`](http://en.wikipedia.org/wiki/Literate_programming). 
+
+## Chapter 1 - R for Genome Wide Association Studies
+
+### Abstract
+The authors state that R has become the de facto language of choice for statisticians and that it is the most widely used environment for analysing high-throughput genomic data. While these statements are certainly not wrong, one has to keep in mind that most of statistical analyses are probably still done in MS Excel. What I want to say here is that I would not make any recommendation of a product only based on the fact that a large number of people use that product. From my point of view, R is widely used because it has a very active and supportive community and that problems are solved much quicker than in any other commericially available products. 
+
+In this chapter, the authors discuss some approaches for performance improvement in R when working with large SNP datasets. 
+
+### Introduction
+The introduction starts with the same statements as were already mentioned at the begining of the abstract. Do not get me wrong here, I do not want to critisize the authors here for saying anything wrong, but I find those arguments not so convincing. Let me add two points in favor of R that I would use to convince people to use R. For all those readers who are not interested in these arguments or for all those who are already convinced of R, can safely skip the remainder of this subsection and can jump to the next subsection.
+
+1. `Fast Prototyping` - stands for the fact that once you have an idea, it can be very quickly transformed into R-code. This is explained very nicely by Dirk Edelbuettel in a [Google Tech Talk](https://www.youtube.com/watch?v=UZkaZhsOfT4). In short, imaging you have a dataset, like the one on eruption times and waiting times of the Old Faithful geyser in Yellowstone National Park, and you want to draw a histogram of the eruption times. In R this is just one statement. 
+
+```{r, fig.show='asis'}
+hist(faithful$eruption)
+```
+
+Let us further assume that I want to draw 10000 markov samples from the empirical distribution and I want to show confidence levels of the drawn samples.
+
+2. `Literate Programming` - R provides a lot of infrastructure to implement the paradigm of literate programming. 
+
+
+## Chapter 2 - Descriptive Statistics of Data: Understanding the Data Set and Phenotypes of Interest
+
 
 ## References
