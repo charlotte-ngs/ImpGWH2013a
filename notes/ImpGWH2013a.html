@@ -87,7 +87,11 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>It is true that it takes time to read genomic data of a certain size into R, but this is true for any system. Using the same example as in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span>, the following timings result</p>
 <pre class="r"><code>(ptReadTable  &lt;- system.time(myData &lt;- read.table(file = &quot;../data/square.txt&quot;, sep = &quot;\t&quot;)))</code></pre>
 <pre><code>##    user  system elapsed 
-##  56.809   0.502  57.366</code></pre>
+##   58.84    0.14   59.05</code></pre>
+<pre class="r"><code>dim(myData)</code></pre>
+<pre><code>## [1]  1000 50002</code></pre>
+<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 59.05 seconds until the data is read compared to not being able to read the data at all.</p>
+<p>Specifying</p>
 <pre><code>To be continued ...</code></pre>
 <div class="references">
 <h2>References</h2>

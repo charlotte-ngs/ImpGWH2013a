@@ -51,7 +51,13 @@ It is true that it takes time to read genomic data of a certain size into R, but
 
 ```{r}
 (ptReadTable  <- system.time(myData <- read.table(file = "../data/square.txt", sep = "\t")))
+dim(myData)
 ```
+
+As a very small side note, when looking at the dimension of the data.frame `myData`, we can see that it has `r ncol(myData)` columns. According to [Excel specifications and limits](https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&ui=en-US&rs=en-US&ad=US) the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for `r as.numeric(ptReadTable[3])` seconds until the data is read compared to not being able to read the data at all. 
+
+Specifying 
+
 
 
 ```
