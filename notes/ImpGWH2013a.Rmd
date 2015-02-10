@@ -93,6 +93,23 @@ Adding more options concerning the comment character and the number of rows, we 
 
 ```
 
+### Comparing read.table results
+So far we have seen three different versions of how to read a dataset into R using the `read.table()` function. Now let us compare the timings that we have measured so far.
+
+
+```{r, echo=FALSE}
+nImpColClasses <- round((as.numeric(ptReadTable[3])-as.numeric(ptReadTableColClasses[3]))/
+                          as.numeric(ptReadTable[3]), 
+                        digits = 2)
+nImpNRows <- round((as.numeric(ptReadTable[3])-as.numeric(ptReadTableNRows[3]))/
+                          as.numeric(ptReadTable[3]), 
+                        digits = 2)
+```
+Read.table version | Total time (in s)                        | Improvement over minimal (in %)
+------------------ | ---------------------------------------- | -------------------------------
+minimal            | `r as.numeric(ptReadTable[3])`           | 
+colClasses         | `r as.numeric(ptReadTableColClasses[3])` | `r 100 * nImpColClasses`
+nRows              | `r as.numeric(ptReadTableNRows[3])`      | `r 100 * nImpNRows`
 
 
 
