@@ -84,15 +84,62 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 <div id="section-2---reading-data-into-r" class="section level2">
 <h2>Section 2 - Reading Data into R</h2>
-<p>It is true that it takes time to read genomic data of a certain size into R, but this is true for any system. Using the same example as in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span>, the following timings result</p>
-<pre class="r"><code>(ptReadTable  &lt;- system.time(myData &lt;- read.table(file = &quot;../data/square.txt&quot;, sep = &quot;\t&quot;)))</code></pre>
+<p>It is true that it takes time to read genomic data of a certain size into R, but this is true for any system. Using the same dataset as in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span>, the following timings result</p>
+<pre class="r"><code>sSnpDataFn &lt;- &quot;../data/square.txt&quot;
+(ptReadTable  &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   58.84    0.14   59.05</code></pre>
+##  57.751   0.553  58.356</code></pre>
 <pre class="r"><code>dim(myData)</code></pre>
 <pre><code>## [1]  1000 50002</code></pre>
-<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 59.05 seconds until the data is read compared to not being able to read the data at all.</p>
-<p>Specifying</p>
+<div id="what-about-ms-excel" class="section level3">
+<h3>What about MS Excel?</h3>
+<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 58.356 seconds until the data is read compared to not being able to read the data at all.</p>
+<p>Back on track to where we were before that side note, we still want to read that SNP dataset into R and we would like to do it a little faster then what we just saw with a bare-bones <code>read.table</code> command. One way of doing this is by telling the <code>read.table()</code> function what datatype to expect in which column. Datatypes are specified using the argument <code>colClasses</code> which is set to a vector of strings where each vector element contains the datatype of the corresponding datacolumn.</p>
+<pre class="r"><code>(ptReadTableColClasses &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;, 
+                                                           colClasses = c(&quot;character&quot;, &quot;factor&quot;, 
+                                                                          rep(&quot;numeric&quot;,50001)))))</code></pre>
+<pre><code>##    user  system elapsed 
+##  49.845   0.448  50.332</code></pre>
+</div>
+<div id="uups-why-is-this-not-working" class="section level3">
+<h3>Uups why is this not working?</h3>
+<p>When we compare the above statement to the original one in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span>, we can see that there is a difference. The vector assigned to the <code>colClasses</code> argument in the book is missing the first element. The statement in the book when copy-pasted to the R-prompt gives the following error:</p>
+<pre><code>myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;, colClasses = c(&quot;factor&quot;, rep(&quot;numeric&quot;,50001)))
+Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  : 
+  scan() expected 'a real', got 'A'</code></pre>
+<p>The reason for the error can be found in the help file to <code>?read.table()</code> which says for the argument colClasses that row names must also be specified in the vector of column classes. Therefore when adding “character” as the first element of the colClasses vector, the error disappears.</p>
+</div>
+<div id="bummer---literate-programming-rocks" class="section level3">
+<h3>Bummer - Literate Programming Rocks!</h3>
+<p>This is really unbelievable, the authors of the first chapter in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span> could not have given me a bigger gift with this error. I really feel blessed to be able to present such a fantastic show-case in favor of literate programming. Would the authors have used a literate programming approach, such as we are doing here, the could have avoided for themselves the embarrasing and painful experience of showing an incorrect statements already in the second code snippet that they are presenting. For the reader of the book who really wants to use the examples, this is very frustrating when you hit an error in the second statement that could be found.</p>
+<p>In the text after the code snippet producing the error, there is yet another problem. The authors mention that performance could still be marginally improved by specifying the number of rows in the table beforehand using in out case <code>ncols=50000</code>. But this does not work. First, we do not have 50000 rows but only 1000 rows. Second, the function <code>read.table()</code> does not have an argument called <code>ncol</code>. Such an argument would make no sense at all, because the number of columns is already determined by the colClasses vector. Probably, what the authors wanted to say is to specify the number of rows using the <code>nrows</code> argument such as shown below.</p>
+<p>Adding more options concerning the comment character and the number of rows, we can hope to still get a little faster.</p>
+<pre class="r"><code>(ptReadTableNRows &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;, 
+                                                           colClasses = c(&quot;character&quot;, &quot;factor&quot;, 
+                                                                          rep(&quot;numeric&quot;,50001)),
+                                                           comment.char = &quot;&quot;,
+                                                           nrows = 1000)))</code></pre>
+<pre><code>##    user  system elapsed 
+##  48.066   0.266  48.371</code></pre>
 <pre><code>To be continued ...</code></pre>
+</div>
+</div>
+<div id="session-info" class="section level2">
+<h2>Session Info</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.1.1 (2014-07-10)
+## Platform: x86_64-apple-darwin13.1.0 (64-bit)
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+## [1] digest_0.6.4     evaluate_0.5.5   formatR_1.0      htmltools_0.2.4 
+## [5] knitr_1.6        rmarkdown_0.3.10 stringr_0.6.2    tools_3.1.1     
+## [9] yaml_2.1.13</code></pre>
 <div class="references">
 <h2>References</h2>
 <p>Gondro, Cedric, Julius van der Werf, and Ben Hayes. 2013. “Genome-Wide Association Studies and Genomic Prediction.” <a href="http://www.springer.com/life+sciences/systems+biology+and+bioinformatics/book/978-1-62703-446-3">http://www.springer.com/life+sciences/systems+biology+and+bioinformatics/book/978-1-62703-446-3</a>.</p>

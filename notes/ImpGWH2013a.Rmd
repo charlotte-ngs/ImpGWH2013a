@@ -47,7 +47,7 @@ After this short digression, let us get back to [@GWH2013a]
 
 
 ## Section 2 - Reading Data into R
-It is true that it takes time to read genomic data of a certain size into R, but this is true for any system. Using the same example as in [@GWH2013a], the following timings result
+It is true that it takes time to read genomic data of a certain size into R, but this is true for any system. Using the same dataset as in [@GWH2013a], the following timings result
 
 ```{r}
 sSnpDataFn <- "../data/square.txt"
@@ -55,21 +55,54 @@ sSnpDataFn <- "../data/square.txt"
 dim(myData)
 ```
 
+### What about MS Excel?
 As a very small side note, when looking at the dimension of the data.frame `myData`, we can see that it has `r ncol(myData)` columns. According to [Excel specifications and limits](https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&ui=en-US&rs=en-US&ad=US) the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for `r as.numeric(ptReadTable[3])` seconds until the data is read compared to not being able to read the data at all. 
 
 Back on track to where we were before that side note, we still want to read that SNP dataset into R and we would like to do it a little faster then what we just saw with a bare-bones `read.table` command. One way of doing this is by telling the `read.table()` function what datatype to expect in which column. Datatypes are specified using the argument `colClasses` which is set to a vector of strings where each vector element contains the datatype of the corresponding datacolumn. 
 
 ```{r}
 (ptReadTableColClasses <- system.time(myData <- read.table(file = sSnpDataFn, sep = "\t", 
-                                                           colClasses = c("factor", rep("numeric",50001)))))
+                                                           colClasses = c("character", "factor", 
+                                                                          rep("numeric",50001)))))
 ```
 
+### Uups why is this not working?
+When we compare the above statement to the original one in [@GWH2013a], we can see that there is a difference. The vector assigned to the `colClasses` argument in the book is missing the first element. The statement in the book when copy-pasted to the R-prompt gives the following error:
+
+```
+myData <- read.table(file = sSnpDataFn, sep = "\t", colClasses = c("factor", rep("numeric",50001)))
+Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  : 
+  scan() expected 'a real', got 'A'
+```
+
+The reason for the error can be found in the help file to `?read.table()` which says for the argument colClasses that row names must also be specified in the vector of column classes. Therefore when adding "character" as the first element of the colClasses vector, the error disappears. 
+
+### Bummer - Literate Programming Rocks!
+This is really unbelievable, the authors of the first chapter in [@GWH2013a] could not have given me a bigger gift with this error. I really feel blessed to be able to present such a fantastic show-case in favor of literate programming. Would the authors have used a literate programming approach, such as we are doing here, the could have avoided for themselves the embarrasing and painful experience of showing an incorrect statements already in the second code snippet that they are presenting. For the reader of the book who really wants to use the examples, this is very frustrating when you hit an error in the second statement that could be found. 
+
+In the text after the code snippet producing the error, there is yet another problem. The authors mention that performance could still be marginally improved by specifying the number of rows in the table beforehand using in out case `ncols=50000`. But this does not work. First, we do not have 50000 rows but only `r nrow(myData)` rows. Second, the function `read.table()` does not have an argument called `ncol`. Such an argument would make no sense at all, because the number of columns is already determined by the colClasses vector. Probably, what the authors wanted to say is to specify the number of rows using the `nrows` argument such as shown below. 
+
+Adding more options concerning the comment character and the number of rows, we can hope to still get a little faster.
+
+```{r}
+(ptReadTableNRows <- system.time(myData <- read.table(file = sSnpDataFn, sep = "\t", 
+                                                           colClasses = c("character", "factor", 
+                                                                          rep("numeric",50001)),
+                                                           comment.char = "",
+                                                           nrows = 1000)))
+
+```
 
 
 
 
 ```
 To be continued ...
+```
+
+## Session Info
+```{r}
+sessionInfo()
 ```
 
 ## References
