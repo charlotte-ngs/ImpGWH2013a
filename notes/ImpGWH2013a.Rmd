@@ -23,6 +23,41 @@ references:
   title: Genome-Wide Association Studies and Genomic Prediction
 ---
 
+```{r, echo=FALSE}
+### # options whether to re-generate data initially and whether to keep data at the end
+bReGenerateData <- TRUE
+bKeepData <- FALSE
+
+### # define file names of data files
+sDataDn <- "../data"
+sSnpPhenFn <- file.path(sDataDn, "square.txt")
+sSnpFn <- file.path(sDataDn, "genotypes.txt")
+
+### # dimensionality of SNP matrix
+nNrSnp <- 50000
+nNrSamples <- 1000
+
+### # data simulation, as given in R-scripts downloaded from Springer
+if (bReGenerateData) {
+  matSnp <- matrix(sample(c(0,1,2),nNrSnp*nNrSamples,replace=T),nNrSnp,nNrSamples)
+  dfSnp <- data.frame(matSnp)
+  names(dfSnp) <- paste("ID",1:nNrSamples,sep="")
+  rownames(dfSnp) <- paste("SNP",1:nNrSnp,sep="")
+  dfSnp <- rbind(sample(c("A","N"),nNrSamples,replace=T),rnorm(nNrSamples),dfSnp)
+  rownames(dfSnp)[1:2] <- c("status","phenotype")
+  
+  ### # check whether data dir exists
+  if (! file.exists(sDataDn)) dir.create(sDataDn)
+  ### # write snp and phenotypes
+  write.table(t(dfSnp), file = sSnpPhenFn, quote = F, col.names = T, row.names = T, sep = "\t")
+  ### # genotypes only  
+  write.table(dfSnp[-c(1,2),], file = sSnpFn, quote = F, col.names = F, row.names = F, sep = "\t")
+  
+}
+
+
+```
+
 ## Disclaimer
 This document summarizes the content of chapter 1 of [@GWH2013a]. The main objective of this summary is to transform the summarized text and the programming code between the text into a document based on the paradigm of [`Literate Programming`](http://en.wikipedia.org/wiki/Literate_programming). 
 
@@ -154,23 +189,33 @@ The above code snippet is not doing anything terribly clever, but it just illust
 With the advent of big data, the above construct can become more and more important, because nowadays, we often do not have the complete dataset to be analysed in one single file. Most likely we just have a stream of data that is sent to us from some server and we just have to process that stream. For example, suppose we want to analyse certain properties of SNPs from a large SNP-database or we want to link certain characteristics of SNPs to properties that are found in sequence databases such as Genebank, but we do not have neither the time to wait for the SNP-database and the complete Genebank database to be downloaded nor do we have the money to store all this data. So what we try to do is to send requests to these database servers to send us a stream of interesting data and we are processing this data on the fly and storing just the results. 
 
 
-### Conclusions
-As we have shown with our timings in the section above, reading data into R does require some time. But still, for reading like $10
+### Conclusions of Section 2
+As we have shown with our timings in the section above, reading data into R does require some time. But still, for reading a dataset in the order of $10^7$ data points requires less than one minute to load seams to be quite acceptable. 
 
+Whenever, we have to read the excact same dataset more than once the fastest is always to load the dataset the first time from the file, then save the R object in binary format and then load it again using the load command. For the above dataframe `myData` this is done as follows.
 
-
-
-
-
-
-
+```{r}
+sDataBinFn <- "../data/mydata.bin"
+save(myData, file = sDataBinFn)
+(ptBinLoad <- system.time(load(file = sDataBinFn)))
 ```
-To be continued ...
-```
+
+Comparing the above timing to the minimal version using the `read.table()` function shows that loading a data object from a binary file is `r round(as.numeric(ptReadTable[3])/as.numeric(ptBinLoad[3]), digits = 0)` times faster than the minimal version. This makes clear that reading the exact same dataset from a file more than once, is a waste of time. 
+
 
 ## Session Info
 ```{r}
 sessionInfo()
 ```
+
+```{r, echo=FALSE}
+### # in case we do not want to keep the data, clean up
+if (!bKeepData) unlink(c(sSnpPhenFn, sSnpFn, sDataBinFn))
+```
+
+```
+To be continued ...
+```
+
 
 ## References

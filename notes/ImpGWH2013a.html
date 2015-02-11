@@ -88,18 +88,18 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <pre class="r"><code>sSnpDataFn &lt;- &quot;../data/square.txt&quot;
 (ptReadTable  &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   59.25    0.17   59.45</code></pre>
+##   55.16    0.17   55.61</code></pre>
 <pre class="r"><code>dim(myData)</code></pre>
 <pre><code>## [1]  1000 50002</code></pre>
 <div id="what-about-ms-excel" class="section level3">
 <h3>What about MS Excel?</h3>
-<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 59.45 seconds until the data is read compared to not being able to read the data at all.</p>
+<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 55.61 seconds until the data is read compared to not being able to read the data at all.</p>
 <p>Back on track to where we were before that side note, we still want to read that SNP dataset into R and we would like to do it a little faster then what we just saw with a bare-bones <code>read.table</code> command. One way of doing this is by telling the <code>read.table()</code> function what datatype to expect in which column. Datatypes are specified using the argument <code>colClasses</code> which is set to a vector of strings where each vector element contains the datatype of the corresponding datacolumn.</p>
 <pre class="r"><code>(ptReadTableColClasses &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;, 
                                                            colClasses = c(&quot;character&quot;, &quot;factor&quot;, 
                                                                           rep(&quot;numeric&quot;,50001)))))</code></pre>
 <pre><code>##    user  system elapsed 
-##   54.06    0.22   54.27</code></pre>
+##   52.71    0.08   52.96</code></pre>
 </div>
 <div id="uups-why-is-this-not-working" class="section level3">
 <h3>Uups why is this not working?</h3>
@@ -120,7 +120,7 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
                                                            comment.char = &quot;&quot;,
                                                            nrows = 1000)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   51.98    0.08   52.06</code></pre>
+##   51.68    0.03   51.91</code></pre>
 </div>
 <div id="comparing-read.table-results" class="section level3">
 <h3>Comparing read.table results</h3>
@@ -136,21 +136,63 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
 <tbody>
 <tr class="odd">
 <td align="left">minimal</td>
-<td align="left">59.45</td>
+<td align="left">55.61</td>
 </tr>
 <tr class="even">
 <td align="left">colClasses</td>
-<td align="left">54.27</td>
-<td align="left">9</td>
+<td align="left">52.96</td>
+<td align="left">5</td>
 </tr>
 <tr class="odd">
 <td align="left">nRows</td>
-<td align="left">52.06</td>
-<td align="left">12</td>
+<td align="left">51.91</td>
+<td align="left">7</td>
 </tr>
 </tbody>
 </table>
-<pre><code>To be continued ...</code></pre>
+<p>Comparing the timings in the above table, we observe much smaller differences than reported in <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span>. It is difficult to find a reason for that because such timings are very difficult to compare across machines and also between different versions of R. Useful information on telling the reader how results were produced is included in the section <code>Session Info</code>. The content of this section is just the output of the R function <code>sessionInfo()</code>.</p>
+</div>
+<div id="alternatives-to-read.table" class="section level3">
+<h3>Alternatives to read.table</h3>
+<p>Using the function <code>read.table()</code> we were able to read all data, phenotypes and genotypes from the same file. In principle we did not even have to know the dimension of the dataset or what datatypes were contained in which columns, <code>read.table()</code> would figure it out all by itself.</p>
+<p>Now let us assume that genotypes are stored in a separate file and that they are encoded all by numerical values. Then it is possible to read the genotypes using the function <code>scan()</code>. Because <code>scan()</code> is a low-level <code>C</code>-function, it should be faster than <code>read.table()</code> and combining <code>scan()</code> together with <code>matrix()</code> is probably the fastest way to read data of tabular form into R.</p>
+<pre class="r"><code>(ptMatrixScan &lt;- system.time(myGeno &lt;- matrix(scan(file = &quot;../data/genotypes.txt&quot;, 
+                                                   what = integer(), 
+                                                   sep = &quot;\t&quot;), 
+                                              nrow = 50000, 
+                                              ncol = 1000, 
+                                              byrow = T)))</code></pre>
+<pre><code>##    user  system elapsed 
+##   10.23    0.09   13.93</code></pre>
+<p>This reads all genotypes from a file and stores it in a matrix of dimension 50000 <span class="math">\(\times\)</span> 1000. Reading the genotypes with <code>scan()</code> takes 13.93 seconds which is a 75 percent improvement over the minimal version shown in the above table.</p>
+<p>In case, we do not need the data in a tabular form, then we can use functions like <code>readLines()</code> or <code>readChar()</code>. The former reads the content into a vector of characters. Each line of the input file is stored as one vector component. For <code>readChar()</code> a character vector of length corresponding to the number of items read is returned. These functions <code>readLines()</code> and <code>readChar()</code> are faster than <code>scan()</code> but they are only useful, if we can use the data as vector of characters. First reading the data using <code>readLines()</code> or <code>readChar()</code> and then parsing the data using some high-level R-functions is probably not faster than using <code>scan</code> in the first place.</p>
+<p>The function <code>readLines()</code> can be very useful if we have a really big dataset that does not fit into memory, then we can use the following construct which reads the content line by line and stores the current line in <code>curLine</code>.</p>
+<pre class="r"><code>conInput &lt;- file(description = &quot;../data/genotypes.txt&quot;, open = &quot;r&quot;)
+nrLine &lt;- 0
+sumFirstElement &lt;- 0
+while (length(curLine  &lt;- readLines(con = conInput, n = 1)) &gt; 0) {
+  vecCurElement &lt;- unlist(strsplit(curLine, split = &quot;\t&quot;, perl = TRUE))
+  sumFirstElement &lt;- sumFirstElement + as.numeric(vecCurElement[1])
+  nrLine &lt;- nrLine + 1
+}
+close(conInput)
+cat(&quot;Number of lines read: &quot;, nrLine, &quot;\n&quot;)</code></pre>
+<pre><code>## Number of lines read:  50000</code></pre>
+<pre class="r"><code>cat(&quot;Sum over first elements: &quot;, sumFirstElement)</code></pre>
+<pre><code>## Sum over first elements:  49862</code></pre>
+<p>The above code snippet is not doing anything terribly clever, but it just illustrates how one can use <code>readLines()</code> for reading a file line-by-line. Once a line is read from the file, it is stored in the one element character vector <code>curLine</code> which is then parsed into its elements in splitting the line at the separator. After the split, the above code just sums over the first element of each line and it counts the number of lines read.</p>
+<p>With the advent of big data, the above construct can become more and more important, because nowadays, we often do not have the complete dataset to be analysed in one single file. Most likely we just have a stream of data that is sent to us from some server and we just have to process that stream. For example, suppose we want to analyse certain properties of SNPs from a large SNP-database or we want to link certain characteristics of SNPs to properties that are found in sequence databases such as Genebank, but we do not have neither the time to wait for the SNP-database and the complete Genebank database to be downloaded nor do we have the money to store all this data. So what we try to do is to send requests to these database servers to send us a stream of interesting data and we are processing this data on the fly and storing just the results.</p>
+</div>
+<div id="conclusions" class="section level3">
+<h3>Conclusions</h3>
+<p>As we have shown with our timings in the section above, reading data into R does require some time. But still, for reading a dataset in the order of <span class="math">\(10^7\)</span> data points requires less than one minute to load seams to be quite acceptable.</p>
+<p>Whenever, we have to read the excact same dataset more than once the fastest is always to load the dataset the first time from the file, then save the R object in binary format and then load it again using the load command. For the above dataframe <code>myData</code> this is done as follows.</p>
+<pre class="r"><code>sDataBinFn &lt;- &quot;../data/mydata.bin&quot;
+save(myData, file = sDataBinFn)
+(ptBinLoad &lt;- system.time(load(file = sDataBinFn)))</code></pre>
+<pre><code>##    user  system elapsed 
+##    1.11    0.00    1.11</code></pre>
+<p>Comparing the above timing to the minimal version using the <code>read.table()</code> function shows that loading a data object from a binary file is 50 times faster than the minimal version. This makes clear that reading the exact same dataset from a file more than once, is a waste of time.</p>
 </div>
 </div>
 <div id="session-info" class="section level2">
