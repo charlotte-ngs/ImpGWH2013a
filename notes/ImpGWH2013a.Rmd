@@ -223,7 +223,7 @@ The function `readLines()` allows us to read a file line-by-line and therebye of
 
 
 ## Section 3 - Loops and Vectorization
-It is true, R is not FORTRAN and not C. That means, programming practices that are common in those two languages do normally not translate very well into R. Translation here means pure syntactic conversion of code from FORTRAN or C into R statements. The fact that the R kernel is written in C and that many compiled libraries are written in FORTRAN that are available in R does not help a lot here. 
+It is true, R is neither FORTRAN and nor C. That means, programming practices that are common in FORTRAN and C do normally not translate very well into R. Translation here means pure syntactic conversion of code from FORTRAN or C into R statements. The fact that the R kernel is written in C and that many compiled libraries available in R are written in FORTRAN does not change the fact that programming in R requires different concepts compared to programming in FORTRAN and C. The fundamental difference means that problems require a different way of thinking when they should be solved in R. One important thing to remember is that the basic datatype in R is a vector. Hence many R-functions are optimized to work well with vectors, i.e., these functions are vectorized. 
 
 ```
 To be continued ...
