@@ -24,6 +24,8 @@ references:
 ---
 
 ```{r, echo=FALSE}
+### # fix rng seed
+set.seed(1234)
 ### # options whether to re-generate data initially and whether to keep data at the end
 bReGenerateData <- TRUE
 bKeepData <- FALSE
@@ -66,7 +68,8 @@ This document summarizes the content of chapter 1 of [@GWH2013a]. The main objec
 ### Abstract
 The authors state that R has become the de facto language of choice for statisticians and that it is the most widely used environment for analysing high-throughput genomic data. While these statements are certainly not wrong, one has to keep in mind that most of statistical analyses are probably still done in MS Excel. But despite that fact I would never recommend to anyone to use MS Excel for any statistical analysis. Or more generally I would not make any recommendation of a product only based on the fact that a large number of people use that product. From my point of view, R is widely used because it has a very active and supportive community and that problems are solved much quicker than in any other commericially available products. 
 
-### Section 1 - Introduction
+
+## Section 1 - Introduction
 The introduction starts with the same statements as were already mentioned at the begining of the abstract. Do not get me wrong here, I am not critisizing the authors here for saying anything wrong, but I find those arguments not so convincing. Part of the problem is also that no examples of R-code snippets are shown to support their argument. 
 
 Let me add two points in favor of R that I would use to convince people to use R. For all those readers who are not interested in these arguments or for all those who are already convinced of R, can safely skip the remainder of this subsection and can jump to the summary of section 2 of chapter 1 of [@GWH2013a].
@@ -152,7 +155,7 @@ Comparing the timings in the above table, we observe much smaller differences th
 ### Alternatives to read.table
 Using the function `read.table()` we were able to read all data, phenotypes and genotypes from the same file. In principle we did not even have to know the dimension of the dataset or what datatypes were contained in which columns, `read.table()` would figure it out all by itself. 
 
-Now let us assume that genotypes are stored in a separate file and that they are encoded all by numerical values. Then it is possible to read the genotypes using the function `scan()`. Because `scan()` is a low-level `C`-function, it should be faster than `read.table()` and combining `scan()` together with `matrix()` is probably the fastest way to read data of tabular form into R.
+Now let us assume that genotypes are stored in a separate file and that they are all encoded by numerical values. Furthermore, we know the dimensions of the genoptypes matrix corresponding to the number of SNPs times the number of samples. Then it is possible to read the genotypes using the function `scan()`. Because `scan()` is a low-level `C`-function, it should be faster than `read.table()` and combining `scan()` together with `matrix()` is probably the fastest way to read data of tabular form into R.
 
 ```{r}
 (ptMatrixScan <- system.time(myGeno <- matrix(scan(file = "../data/genotypes.txt", 
@@ -163,10 +166,22 @@ Now let us assume that genotypes are stored in a separate file and that they are
                                               byrow = T)))
 ```
 
-This reads all genotypes from a file and stores it in a matrix of dimension `r nrow(myGeno)` $\times$ `r ncol(myGeno)`. Reading the genotypes with `scan()` takes `r as.numeric(ptMatrixScan[3])` seconds which is a 
-`r round((as.numeric(ptReadTable[3])-as.numeric(ptMatrixScan[3]))/as.numeric(ptReadTable[3]), digits = 2) * 100` percent improvement over the minimal version shown in the above table.
+This reads all genotypes from a file and stores it in a matrix of dimension `r nrow(myGeno)` $\times$ `r ncol(myGeno)`. Reading the genotypes with `scan()` takes `r as.numeric(ptMatrixScan[3])` seconds. Adding this result to the above table allows us to compare all methods that transform the input SNP genotypes into a tabular form. The comparison is not completely fair, because `read.table()` also read the phenotypes which is not done by `matrix(scan())`. 
 
-In case, we do not need the data in a tabular form, then we can use functions like `readLines()` or `readChar()`. The former reads the content into a vector of characters. Each line of the input file is stored as one vector component. For `readChar()` a character vector of length corresponding to the number of items read is returned. These functions `readLines()` and `readChar()` are faster than `scan()` but they are only useful, if we can use the data as vector of characters. First reading the data using `readLines()` or `readChar()` and then parsing the data using some high-level R-functions is probably not faster than using `scan` in the first place. 
+```{r, echo=FALSE}
+nImpMatScan <- round((as.numeric(ptReadTable[3])-as.numeric(ptMatrixScan[3]))/as.numeric(ptReadTable[3]), digits = 2)
+```
+
+Input version      | Total time (in s)                        | Improvement over minimal (in %)
+------------------ | ---------------------------------------- | -------------------------------
+minimal            | `r as.numeric(ptReadTable[3])`           | 
+colClasses         | `r as.numeric(ptReadTableColClasses[3])` | `r 100 * nImpColClasses`
+nRows              | `r as.numeric(ptReadTableNRows[3])`      | `r 100 * nImpNRows`
+matrix-scan        | `r as.numeric(ptMatrixScan[3])`          | `r 100 * nImpMatScan`
+
+When looking at the above table it is clear that only `matrix(scan())` leads to a significant improvement of the time it takes to import our example dataset. But specifying all the options like number of rows or column classes has an other important advantage. It allows us to check the consistency between what we think should be in the dataset and what R really finds in data file specified as input.  
+
+In case, we do not need the data in a tabular form, then we can use functions like `readLines()` or `readChar()`. The former reads the content into a vector of characters. Each line of the input file is stored as one vector component. For `readChar()` a character vector of length corresponding to the number of items read is returned. These functions `readLines()` and `readChar()` are faster than `scan()` but they are only useful, if we can use the data as vector of characters. First reading the data using `readLines()` or `readChar()` and then parsing the data using some high-level R-functions is probably not faster than using `scan` in the first place. Because the result that we get from `read.table()` and `matrix(scan())` on the one side and from `readLines()` and `readChar()` on the other side is very different, a direct comparison of the timing results does not make a whole lot of sense. 
 
 The function `readLines()` can be very useful if we have a really big dataset that does not fit into memory, then we can use the following construct which reads the content line by line and stores the current line in `curLine`. 
 
@@ -190,9 +205,9 @@ With the advent of big data, the above construct can become more and more import
 
 
 ### Conclusions of Section 2
-As we have shown with our timings in the section above, reading data into R does require some time. But still, for reading a dataset in the order of $10^7$ data points requires less than one minute to load seams to be quite acceptable. 
+As we have shown with our timings in the section above, reading data into R does require some time. But still, for reading a dataset in the order of $10^7$ data points requires less than one minute to load. This seams to be quite acceptable to me. 
 
-Whenever, we have to read the excact same dataset more than once the fastest is always to load the dataset the first time from the file, then save the R object in binary format and then load it again using the load command. For the above dataframe `myData` this is done as follows.
+Whenever, we have to read the excact same dataset more than once, the fastest is always to load the dataset the first time from the file, then save the R object in binary format and then load it again using the `load()` command. For the above dataframe `myData` this is done as follows.
 
 ```{r}
 sDataBinFn <- "../data/mydata.bin"
@@ -201,6 +216,18 @@ save(myData, file = sDataBinFn)
 ```
 
 Comparing the above timing to the minimal version using the `read.table()` function shows that loading a data object from a binary file is `r round(as.numeric(ptReadTable[3])/as.numeric(ptBinLoad[3]), digits = 0)` times faster than the minimal version. This makes clear that reading the exact same dataset from a file more than once, is a waste of time. 
+
+There is a clear trade-off between the time it takes to read a certain dataset from a file and the amount of information we have to know beforehand about this dataset. Whenever, we need the data in a tabulare form like a data.frame or a matrix it takes longer to read and convert that data compared to when we just read the data into a vector of strings.
+
+The function `readLines()` allows us to read a file line-by-line and therebye offers the possibility of processing streams of data commonly observed in big data projects.
+
+
+## Section 3 - Loops and Vectorization
+It is true, R is not FORTRAN and not C. That means, programming practices that are common in those two languages do normally not translate very well into R. Translation here means pure syntactic conversion of code from FORTRAN or C into R statements. The fact that the R kernel is written in C and that many compiled libraries are written in FORTRAN that are available in R does not help a lot here. 
+
+```
+To be continued ...
+```
 
 
 ## Session Info
@@ -211,10 +238,6 @@ sessionInfo()
 ```{r, echo=FALSE}
 ### # in case we do not want to keep the data, clean up
 if (!bKeepData) unlink(c(sSnpPhenFn, sSnpFn, sDataBinFn))
-```
-
-```
-To be continued ...
 ```
 
 
