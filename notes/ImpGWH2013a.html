@@ -88,18 +88,18 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <pre class="r"><code>sSnpDataFn &lt;- &quot;../data/square.txt&quot;
 (ptReadTable  &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   53.82    0.57   54.62</code></pre>
+##  56.876   0.982  58.204</code></pre>
 <pre class="r"><code>dim(myData)</code></pre>
 <pre><code>## [1]  1000 50002</code></pre>
 <div id="what-about-ms-excel" class="section level3">
 <h3>What about MS Excel?</h3>
-<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 54.619 seconds until the data is read compared to not being able to read the data at all.</p>
+<p>As a very small side note, when looking at the dimension of the data.frame <code>myData</code>, we can see that it has 50002 columns. According to <a href="https://support.office.microsoft.com/en-us/article/Excel-specifications-and-limits-ca36e2dc-1f09-4620-b726-67c00b05040f?CTT=1&amp;CorrelationId=f389929d-fd39-4369-b67d-a8061edd2258&amp;ui=en-US&amp;rs=en-US&amp;ad=US">Excel specifications and limits</a> the number of columns that can be read into a single worksheet in Excel is still limited to 16,384 which makes it clearly impossible to read this dataset into a single worksheet of MS Excel. I clearly prefer waiting for 58.204 seconds until the data is read compared to not being able to read the data at all.</p>
 <p>Back on track to where we were before that side note, we still want to read that SNP dataset into R and we would like to do it a little faster then what we just saw with a bare-bones <code>read.table</code> command. One way of doing this is by telling the <code>read.table()</code> function what datatype to expect in which column. Datatypes are specified using the argument <code>colClasses</code> which is set to a vector of strings where each vector element contains the datatype of the corresponding datacolumn.</p>
 <pre class="r"><code>(ptReadTableColClasses &lt;- system.time(myData &lt;- read.table(file = sSnpDataFn, sep = &quot;\t&quot;, 
                                                            colClasses = c(&quot;character&quot;, &quot;factor&quot;, 
                                                                           rep(&quot;numeric&quot;,50001)))))</code></pre>
 <pre><code>##    user  system elapsed 
-##  49.492   0.416  49.957</code></pre>
+##  52.369   0.563  53.074</code></pre>
 </div>
 <div id="uups-why-is-this-not-working" class="section level3">
 <h3>Uups why is this not working?</h3>
@@ -120,7 +120,7 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
                                                            comment.char = &quot;&quot;,
                                                            nrows = 1000)))</code></pre>
 <pre><code>##    user  system elapsed 
-##  48.145   0.289  48.478</code></pre>
+##  50.698   0.433  51.304</code></pre>
 </div>
 <div id="comparing-read.table-results" class="section level3">
 <h3>Comparing read.table results</h3>
@@ -136,17 +136,17 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
 <tbody>
 <tr class="odd">
 <td align="left">minimal</td>
-<td align="left">54.619</td>
+<td align="left">58.204</td>
 </tr>
 <tr class="even">
 <td align="left">colClasses</td>
-<td align="left">49.957</td>
+<td align="left">53.074</td>
 <td align="left">9</td>
 </tr>
 <tr class="odd">
 <td align="left">nRows</td>
-<td align="left">48.478</td>
-<td align="left">11</td>
+<td align="left">51.304</td>
+<td align="left">12</td>
 </tr>
 </tbody>
 </table>
@@ -163,8 +163,8 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
                                               ncol = 1000, 
                                               byrow = T)))</code></pre>
 <pre><code>##    user  system elapsed 
-##  16.868   0.339  17.221</code></pre>
-<p>This reads all genotypes from a file and stores it in a matrix of dimension 50000 <span class="math">\(\times\)</span> 1000. Reading the genotypes with <code>scan()</code> takes 17.221 seconds. Adding this result to the above table allows us to compare all methods that transform the input SNP genotypes into a tabular form. The comparison is not completely fair, because <code>read.table()</code> also read the phenotypes which is not done by <code>matrix(scan())</code>.</p>
+##  18.749   0.498  19.317</code></pre>
+<p>This reads all genotypes from a file and stores it in a matrix of dimension 50000 <span class="math">\(\times\)</span> 1000. Reading the genotypes with <code>scan()</code> takes 19.317 seconds. Adding this result to the above table allows us to compare all methods that transform the input SNP genotypes into a tabular form. The comparison is not completely fair, because <code>read.table()</code> also read the phenotypes which is not done by <code>matrix(scan())</code>.</p>
 <table>
 <thead>
 <tr class="header">
@@ -176,22 +176,22 @@ Error in scan(file, what, nmax, sep, dec, quote, skip, nlines, na.strings,  :
 <tbody>
 <tr class="odd">
 <td align="left">minimal</td>
-<td align="left">54.619</td>
+<td align="left">58.204</td>
 </tr>
 <tr class="even">
 <td align="left">colClasses</td>
-<td align="left">49.957</td>
+<td align="left">53.074</td>
 <td align="left">9</td>
 </tr>
 <tr class="odd">
 <td align="left">nRows</td>
-<td align="left">48.478</td>
-<td align="left">11</td>
+<td align="left">51.304</td>
+<td align="left">12</td>
 </tr>
 <tr class="even">
 <td align="left">matrix-scan</td>
-<td align="left">17.221</td>
-<td align="left">68</td>
+<td align="left">19.317</td>
+<td align="left">67</td>
 </tr>
 </tbody>
 </table>
@@ -222,15 +222,16 @@ cat(&quot;Number of lines read: &quot;, nrLine, &quot;\n&quot;)</code></pre>
 save(myData, file = sDataBinFn)
 (ptBinLoad &lt;- system.time(load(file = sDataBinFn)))</code></pre>
 <pre><code>##    user  system elapsed 
-##   1.099   0.048   1.148</code></pre>
-<p>Comparing the above timing to the minimal version using the <code>read.table()</code> function shows that loading a data object from a binary file is 48 times faster than the minimal version. This makes clear that reading the exact same dataset from a file more than once, is a waste of time.</p>
+##   1.128   0.058   1.190</code></pre>
+<p>Comparing the above timing to the minimal version using the <code>read.table()</code> function shows that loading a data object from a binary file is 49 times faster than the minimal version. This makes clear that reading the exact same dataset from a file more than once, is a waste of time.</p>
 <p>There is a clear trade-off between the time it takes to read a certain dataset from a file and the amount of information we have to know beforehand about this dataset. Whenever, we need the data in a tabulare form like a data.frame or a matrix it takes longer to read and convert that data compared to when we just read the data into a vector of strings.</p>
 <p>The function <code>readLines()</code> allows us to read a file line-by-line and therebye offers the possibility of processing streams of data commonly observed in big data projects.</p>
 </div>
 </div>
 <div id="section-3---loops-and-vectorization" class="section level2">
 <h2>Section 3 - Loops and Vectorization</h2>
-<p>It is true, R is not FORTRAN and not C. That means, programming practices that are common in those two languages do normally not translate very well into R. Translation here means pure syntactic conversion of code from FORTRAN or C into R statements. The fact that the R kernel is written in C and that many compiled libraries are written in FORTRAN that are available in R does not help a lot here.</p>
+<p>It is true, R is neither FORTRAN nor C. That means, programming practices that are common in FORTRAN and C do normally not translate very well into R. Translation here means pure syntactic conversion of code from FORTRAN or C into R statements. The fact that the R kernel is written in C and that many compiled libraries available in R are written in FORTRAN does not change the fact that programming in R requires different concepts compared to programming in FORTRAN and C. The fundamental difference means that problems require a different way of thinking when they are to be addressed in R. One important thing to remember is that the basic data object in R is a vector. Hence many R-functions are optimized to work well with vectors as input arguments.</p>
+<p>In <span class="citation">(Gondro, van der Werf, and Hayes 2013)</span> the authors mention the term <code>reallocation of memory</code>. Afterwards an example is given with a loop that grows a matrix dynamically inside the loop-body. It is true that this is very inefficient, especially in case where the final size of the matrix is known beforehand. What is meant here by <code>memory reallocation</code> is whenever a data structure such as a matrix is grown dynamically, the system has to allocate more memory for that growing data structure. Besides the resource requirements due to the repeated memory allocation, the allocated memory also gets fragmented accross the whole memory space. Fragmentation happens because the system cannot guarantee that a newly allocated junk of memory for a growing data object can be placed directly adjacent to an already existing memory block that has been previously reserved for that same object. The bottom line is, while growing data object dynamically is very convenient for the programmer, it is very inefficient when it comes to use of resources. Hence whenever possible, growing data objects dynamically should be avoided. What is described here about the inefficencies of growing data objects dynamically in R is true for any other programming languages.</p>
 <pre><code>To be continued ...</code></pre>
 </div>
 <div id="session-info" class="section level2">
